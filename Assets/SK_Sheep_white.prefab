@@ -2094,7 +2094,7 @@ GameObject:
   - component: {fileID: -7234368890752931360}
   m_Layer: 0
   m_Name: SK_Sheep_white
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2538,6 +2538,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abfade8c2d4bb7e47abcf99b3f011c89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 100
 --- !u!1 &8185963724001097088
 GameObject:
   m_ObjectHideFlags: 0

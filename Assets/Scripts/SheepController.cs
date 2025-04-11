@@ -14,6 +14,8 @@ public class SheepController : MonoBehaviour
     public float distanceToTarget = 1f;
 
     public GameObject planet;
+    private bool hasCollidedWithPlayer = false; // Flag to track collision with the player
+
 
     void Start()
     {
@@ -28,19 +30,25 @@ public class SheepController : MonoBehaviour
 
     void Update()
     {
-        if (target != null)
+        if (target != null && !hasCollidedWithPlayer)
         {
-            Vector3 direction = (target.transform.position - transform.position).normalized;
 
-            // Rotate the sheep smoothly toward the target
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            float distanceToPlayer = Vector3.Distance(transform.position, target.transform.position);
+            if (distanceToPlayer > distanceToTarget)
+            {
+                Vector3 direction = (target.transform.position - transform.position).normalized;
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            }
+
+
 
             // Move the sheep toward the target if it's farther than the specified distance
             if (Vector3.Distance(transform.position, target.transform.position) > distanceToTarget)
             {
                 transform.Translate(Vector3.forward * speed * Time.deltaTime);
             }
+
 
             // Keep the sheep on the surface of the planet
             Vector3 toPlanetCenter = (transform.position - planet.transform.position).normalized;
@@ -49,6 +57,26 @@ public class SheepController : MonoBehaviour
 
             // Align the sheep's "up" direction with the planet's surface normal
             transform.rotation = Quaternion.FromToRotation(transform.up, toPlanetCenter) * transform.rotation;
+
         }
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            hasCollidedWithPlayer = true; // Stop the sheep's movement
+            Debug.Log("Sheep collided with player!");
+            StartCoroutine(ResumeChasingAfterDelay(2f)); // Wait for 2 seconds before resuming
+        }
+    }
+
+    private IEnumerator ResumeChasingAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        hasCollidedWithPlayer = false; // Resume chasing the player
+        Debug.Log("Sheep resumed chasing the player!");
+    }
+
+
 }

@@ -10,14 +10,18 @@ public class FpsController : MonoBehaviour
 
     public float moveSpeed = 10.0f;
     public float jumpForce = 5.0f;
-    public Transform cameraT;
+    public Transform camera;
     public Transform shotgun;
     float lookRotation;
     Vector3 moveAmount;
     Vector3 smoothMoveVelocity;
+
+    public float health = 3f;
+
+    public float pushForce = 5f; // Force applied to the player when hit by an enemy
     void Start()
     {
-        cameraT = Camera.main.transform;
+        Transform camera = Camera.main.transform;
         if (shotgun == null)
         {
             Debug.LogError("FpsController: Shotgun transform not assigned!");
@@ -30,12 +34,12 @@ public class FpsController : MonoBehaviour
         transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * Time.deltaTime * mouseSensitivityX);
         lookRotation += Input.GetAxis("Mouse Y") * Time.deltaTime * mouseSensitivityY;
         lookRotation = Mathf.Clamp(lookRotation, -90, 90);
-        cameraT.localEulerAngles = Vector3.left * lookRotation;
+        camera.localEulerAngles = Vector3.left * lookRotation;
 
         // Ensure the shotgun follows the camera's rotation
         if (shotgun != null)
         {
-            shotgun.localEulerAngles = cameraT.localEulerAngles;
+            shotgun.localEulerAngles = camera.localEulerAngles;
             shotgun.Rotate(Vector3.up * 90);
         }
 
@@ -52,5 +56,25 @@ public class FpsController : MonoBehaviour
     void FixedUpdate()
     {
         GetComponent<Rigidbody>().MovePosition(GetComponent<Rigidbody>().position + transform.TransformDirection(moveAmount) * Time.fixedDeltaTime);
+    }
+
+    void onCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            // Calculate the direction from the enemy to the player
+            Vector3 pushDirection = (transform.position - collision.transform.position).normalized;
+
+            // Apply a force to the player in the opposite direction of the enemy
+            GetComponent<Rigidbody>().AddForce(pushDirection * pushForce, ForceMode.Impulse);
+
+            health -= 1f; // Decrease health by 1 when hit by an enemy
+            Debug.Log($"Player health: {health}");
+            if (health <= 0)
+            {
+                Debug.Log("Player destroyed");
+                Destroy(gameObject); // Destroy the player object when health reaches 0
+            }
+        }
     }
 }
