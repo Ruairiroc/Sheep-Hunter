@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Ursaanimation.CubicFarmAnimals
 {
@@ -14,45 +15,32 @@ namespace Ursaanimation.CubicFarmAnimals
         public string sittostandAnimation = "sit_to_stand";
         public string standtositAnimation = "stand_to_sit";
 
+        private FarmerGameController controls;
+
+        void Awake()
+        {
+            controls = new FarmerGameController();
+
+            // Bind input actions to animation methods
+            controls.Gameplay.MoveFarmer.performed += ctx => PlayWalkForwardAnimation(ctx);
+            //controls.Gameplay.MoveFarmer.canceled += ctx => StopAnimation();
+
+            controls.Gameplay.MoveCamera.performed += ctx => PlayTurnAnimation(ctx);
+        }
+
         void Start()
         {
             animator = GetComponent<Animator>();
         }
 
-        void Update()
+        private void PlayWalkForwardAnimation(InputAction.CallbackContext ctx)
         {
-            if (Input.GetKeyDown(KeyCode.W))
-            {
-                animator.Play(walkForwardAnimation);
-            }
-            else if (Input.GetKeyDown(KeyCode.S))
-            {
-                animator.Play(walkBackwardAnimation);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                animator.Play(runForwardAnimation);
-            }
-            else if (Input.GetKeyDown(KeyCode.A))
-            {
-                animator.Play(turn90LAnimation);
-            }
-            else if (Input.GetKeyDown(KeyCode.D))
-            {
-                animator.Play(turn90RAnimation);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                animator.Play(trotAnimation);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha4))
-            {
-                animator.Play(sittostandAnimation);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha3))
-            {
-                animator.Play(standtositAnimation);
-            }
+            animator.Play(walkForwardAnimation);
+        }
+
+        private void PlayTurnAnimation(InputAction.CallbackContext ctx)
+        {
+            animator.Play(turn90LAnimation);
         }
     }
 }

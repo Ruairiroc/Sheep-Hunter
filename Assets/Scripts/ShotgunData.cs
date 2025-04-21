@@ -18,6 +18,7 @@ public class ShotgunData : ScriptableObject
 
     public int currentAmmo;
     public int maxAmmo;
+    public float spread = 0.1f;
     public float fireRate;
     public float reloadTime;
     [HideInInspector]

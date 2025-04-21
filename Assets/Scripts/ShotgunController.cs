@@ -9,8 +9,11 @@ public class ShotgunController : MonoBehaviour
 
     float timeSinceLastShot;
 
+    int amountOfPellets = 8;
+
     private void Start()
     {
+        Debug.Log("ShotgunController subscribed to shootInput");
         PlayerShoot.shootInput += Shoot;
         PlayerShoot.reloadInput += StartReload;
     }
@@ -36,20 +39,32 @@ public class ShotgunController : MonoBehaviour
 
     public void Shoot()
     {
+        Debug.Log("ShotgunController.Shoot() called");
         if (shotgunData.currentAmmo > 0)
         {
             if (canShoot())
             {
-                if (Physics.Raycast(muzzle.position, muzzle.forward, out RaycastHit hit, shotgunData.range))
+                for (int i = 0; i < amountOfPellets; i++)
                 {
-                    Debug.Log($"Hit: {hit.transform.name}");
-                    IDamageable damageable = hit.transform.GetComponent<IDamageable>();
-                    damageable?.Damage(shotgunData.damage);
-                }
+                    Vector3 spread = muzzle.forward;
+                    spread += muzzle.right * Random.Range(-shotgunData.spread, shotgunData.spread); // Horizontal spread
+                    spread += muzzle.up * Random.Range(-shotgunData.spread, shotgunData.spread);   // Vertical spread
+                    spread.Normalize();
 
-                shotgunData.currentAmmo--;
-                timeSinceLastShot = 0;
-                OnGunShot();
+                    Debug.DrawRay(muzzle.position, spread * shotgunData.range, Color.red, 1f);
+
+
+                    if (Physics.Raycast(muzzle.position, spread, out RaycastHit hit, shotgunData.range))
+                    {
+                        Debug.Log($"Hit: {hit.transform.name}");
+                        IDamageable damageable = hit.transform.GetComponent<IDamageable>();
+                        damageable?.Damage(shotgunData.damage);
+                    }
+
+                    shotgunData.currentAmmo--;
+                    timeSinceLastShot = 0;
+                    OnGunShot();
+                }
             }
         }
     }
