@@ -1,42 +1,58 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using TMPro;
 public class ShotgunController : MonoBehaviour
 {
     [SerializeField] ShotgunData shotgunData;
     [SerializeField] private Transform muzzle;
+    [SerializeField] private TextMeshProUGUI ammoText;
 
     float timeSinceLastShot;
 
     int amountOfPellets = 8;
-
+    public string slash = "/";
     private void Start()
     {
         Debug.Log("ShotgunController subscribed to shootInput");
+        shotgunData.reloading = false;
         PlayerShoot.shootInput += Shoot;
         PlayerShoot.reloadInput += StartReload;
+
+        ammoText.text = shotgunData.currentAmmo.ToString() + slash + shotgunData.maxAmmo.ToString();
+
     }
 
     public void StartReload()
     {
+        Debug.Log("StartReload called");
         if (!shotgunData.reloading)
         {
             StartCoroutine(Reload());
+        }
+        else
+        {
+            Debug.Log("Reload already in progress");
         }
     }
 
     private IEnumerator Reload()
     {
         shotgunData.reloading = true;
+        Debug.Log("Reloading started...");
         yield return new WaitForSeconds(shotgunData.reloadTime);
         shotgunData.currentAmmo = shotgunData.maxAmmo;
+        ammoText.text = shotgunData.currentAmmo.ToString() + slash + shotgunData.maxAmmo.ToString();
         shotgunData.reloading = false;
+        Debug.Log("Reloading complete!");
     }
 
-
-    private bool canShoot() => !shotgunData.reloading && timeSinceLastShot > 1f / (shotgunData.fireRate / 60f);
-
+    private bool canShoot()
+    {
+        float requiredTimeBetweenShots = 1f / (shotgunData.fireRate / 60f);
+        Debug.Log($"Reloading: {shotgunData.reloading}, Time Since Last Shot: {timeSinceLastShot}, Required Time: {requiredTimeBetweenShots}");
+        return !shotgunData.reloading && timeSinceLastShot > requiredTimeBetweenShots;
+    }
     public void Shoot()
     {
         Debug.Log("ShotgunController.Shoot() called");
@@ -62,6 +78,7 @@ public class ShotgunController : MonoBehaviour
                     }
 
                     shotgunData.currentAmmo--;
+                    ammoText.text = shotgunData.currentAmmo.ToString() + slash + shotgunData.maxAmmo.ToString();
                     timeSinceLastShot = 0;
                     OnGunShot();
                 }
